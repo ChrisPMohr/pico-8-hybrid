@@ -56,14 +56,15 @@ I think representing placement in RAM will be a consequence of whatever data str
 		- [x] doesn't directly affect sprites
 	- [x] generate_flower
 		- [x] doesn't directly affect sprites
-	- [ ] create flower
-		- [ ] I don't think we need to generate the sprite until we place the flower
-		- [ ] Step 2 - remove writes to sprite map
+	- [x] create flower
+		- [x] I don't think we need to generate the sprite until we place the flower
+		- [x] Step 2 - remove writes to sprite map
 	- [x] place_flower
 		- [x] Step 1 - generate sprite and write to extended sprite sheet
-	- [ ] kill_flower
+		- [x] Step 2 - Remove writes to map
+	- [x] kill_flower
 		- [x] Step 1 - Write blanks to the extended sprite sheet
-		- [ ] Step 2 - Remove writes to map
+		- [x] Step 2 - Remove writes to map
 	- [x] draw_flowers
 		- [x] Step 1 - Draw extended sprite sheet 
 	- [x] time_passes (and all nested calls)
@@ -75,6 +76,14 @@ I think representing placement in RAM will be a consequence of whatever data str
 #### Cleanup steps
 - [ ] Adjust field (and button?) cursor indexing to be 1 based
 - [ ] Try switching genes to single 32 bit value instead of table
+- [ ] Remove/refactor/rename functions with overlapping uses
+	- [ ] create_flower
+	- [ ] field1:place
+	- [ ] place_flower
+	- [ ] create_and_place_flower_sprite
+	- [ ] kill_flower
+	- [ ] remove_flower
+
 
 ### Functions to Change
 ```

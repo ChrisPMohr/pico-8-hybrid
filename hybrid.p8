@@ -152,13 +152,6 @@ function generate_and_place_flower(flower_type)
 end
 
 function place_flower(flower)
-	local s = flower.s
-	local fx, fy = flower.x, flower.y
-	local mx, my = (fx-1)*2, (fy-1)*2
-	mset(mx, my, s)
-	mset(mx+1, my, s+1)
-	mset(mx, my+1, s+16)
-	mset(mx+1, my+1, s+17)
 	create_and_place_flower_sprite(flower)
 end
 
@@ -167,11 +160,6 @@ function kill_flower()
 	--the current sprite sheet
 	--management, since it doesn't
 	--free space there
-	local mx, my = fc_x*2, fc_y*2
-	mset(mx, my, 0)
-	mset(mx+1, my, 0)
-	mset(mx, my+1, 0)
-	mset(mx+1, my+1, 0)
 	field1:place(nil, fc_x+1, fc_y+1)
 	remove_flower(fc_x+1, fc_y+1)
 end
@@ -259,11 +247,10 @@ flower_colors = {
 flower_class = {}
 flower_class.__index = flower_class
 
-function flower_class:new(genes, s)
+function flower_class:new(genes)
 	return setmetatable(
 		{
 			genes=genes,
-			s=s -- this is only temporary until migrating sprite sheet
 		},
 		self)
 end
@@ -319,44 +306,7 @@ function spr_pos(s)
 end
 
 function create_flower(genes)
-	if flower_sprites >= 48 then
-		--ran out of space
-		--todo: handle this error
-		return
-	end
-	flower_sprites += 1
-	local s = 64 + flower_sprites * 2 + flower_sprites \ 8 * 16
-
-	--genetics contains 32 bits,
-	--represented by the flags of
-	--sprites s, s+1, s+16, s+17
-	--in order.
-	--meanings:
-	--bit 0: flower type
-	--bits 1-2: color
-	--bits 3-31: unused
-	local flower_type = genes[1] & 0b1
-	local template = 32 + flower_type * 2
-	local c = genes[1] >> 1 & 0b11
-
-	local tx, ty = spr_pos(template)
-	local sx, sy = spr_pos(s)
-	
-	--write to the sprite sheet
-	for x=0,15 do
-		for y=0,15 do
-			local pc = sget(tx+x,ty+y)
-			if pc == 5 then
-				pc = flower_colors[c+1][1]
-			elseif pc == 6  then
-				pc = flower_colors[c+1][2]
-			end
-			sset(sx+x,sy+y,pc)
-		end
-	end
-	
-	--write genes
-	return flower_class:new(genes, s)
+	return flower_class:new(genes)
 end
 
 function breed(flower1, flower2)
