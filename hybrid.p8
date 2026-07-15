@@ -256,7 +256,7 @@ function flower_class:place(fn, x, y)
 end
 
 function flower_class:is_compatible(flower)
-	return self.genes[1] >> 7 == flower.genes[1] >> 7
+	return (self.genes[1] & 0b1) == (flower.genes[1] & 0b1)
 end
 
 function generate_flower(flower_type)
@@ -444,11 +444,12 @@ function time_passes()
 			end
 		end
 	end
-	
+
+		
 	--shuffle the order they're
 	--processed in
-	for i=#breeding,0,-1 do
-		local j=flr(rnd(i+1))
+	for i=#breeding,1,-1 do
+		local j=flr(rnd(i)) + 1
 		breeding[i],breeding[j]=breeding[j],breeding[i]
 	end
 	
