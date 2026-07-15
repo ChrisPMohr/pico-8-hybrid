@@ -145,13 +145,13 @@ end
 function generate_and_place_flower(flower_type)
 	if mget(fc_x*2, fc_y*2) == 0 then
 		local flower = generate_flower(flower_type)
-		place_flower(flower.s, fc_x, fc_y)
+		place_flower(flower.s, fc_x+1, fc_y+1)
 		field1:place(flower, fc_x+1, fc_y+1)
 	end
 end
 
 function place_flower(s, fx, fy)
-	local mx, my = fx*2, fy*2
+	local mx, my = (fx-1)*2, (fy-1)*2
 	mset(mx, my, s)
 	mset(mx+1, my, s+1)
 	mset(mx, my+1, s+16)
@@ -168,7 +168,7 @@ function kill_flower()
 	mset(mx+1, my, 0)
 	mset(mx, my+1, 0)
 	mset(mx+1, my+1, 0)
-	f1.place(nil, fc_x+1, fc_y+1)
+	field1:place(nil, fc_x+1, fc_y+1)
 end
 
 function draw_ground()
@@ -346,15 +346,7 @@ function create_flower(genes)
 	end
 	
 	--write genes
-	fset(s, genes[1])
-	fset(s+1, genes[2])
-	fset(s+16, genes[3])
-	fset(s+17, genes[4])
 	return flower_class:new(genes, s)
-end
-
-function is_compatible(s1, s2)
-	return fget(s1,0) == fget(s2,0)
 end
 
 function breed(flower1, flower2)
@@ -378,20 +370,13 @@ function breed(flower1, flower2)
 	return genes
 end
 
-function get_genes(s)
-	return {
-		fget(s),
-		fget(s+1),
-		fget(s+16),
-		fget(s+17)
-	}
-end
-
 function gene_str(genes)
 	return tostr(genes[1]).." "..tostr(genes[2]).." "..tostr(genes[3]).." "..tostr(genes[4])
 end
 -->8
 --flower breeding
+
+breed_rate = 20
 
 function time_passes()
 	--flowers are currently always
@@ -418,7 +403,7 @@ function time_passes()
 		for y=1,7 do
 			local flower = field1:get(x,y)
 			if flower then
-				if rnd(100) > 80 then
+				if rnd(100) < breed_rate then
 					add(breeding, flower)
 				end
 			end
@@ -526,140 +511,6 @@ function find_child_spaces(x,y,dx,dy)
 	end
 	return child_spaces
 end
--->8
-----flower breeding
---
---function time_passes()
---	--flowers are currently always
---	--full grown, but we probably
---	--want to have a few phases
---	--of growth. that would be handled
---	--here
---	
---	--breeding logic:
---	--cribbed this from ac wiki
---	--for each flower, it has some
---	--chance to breed.
---	--if a flower has an adjacent
---	--flower of the same type with
---	--an adjacent space next to
---	--both, they breed.
---	--otherwise, if it has no
---	--partner, it makes a clone
---	
---	--make a list of flowers that will
---	--breed
---	breeding = {}
---	for x=0,7 do
---		for y=0,6 do
---			local s = mget(x*2,y*2)
---			if s != 0 then
---				if rnd(100) > 80 then
---					add(breeding, {s,x,y})
---				end
---			end
---		end
---	end
---	
---	--shuffle the order they're
---	--processed in
---	for i=#breeding,0,-1 do
---		local j=flr(rnd(i+1))
---		breeding[i],breeding[j]=breeding[j],breeding[i]
---	end
---	
---	for v in all(breeding) do
---		local s,x,y = unpack(v)
---		
---		--determine eligible neighbors
---		local neighbors={}
---		for dx=-1,1 do
---			for dy=-1,1 do
---				local nx,ny = x+dx, y+dy
---				if (dx!=0 or dy!=0) and check_field_bounds(nx, ny) then
---					local ns = mget(nx*2,ny*2)
---					if ns != 0 and is_compatible(s, ns) then
---						local child_spaces = find_child_spaces(x,y,dx,dy)
---						if #child_spaces > 0 then
---							local cx,cy = unpack(rnd(child_spaces))
---							add(neighbors, {ns, cx, cy})
---						end
---					end
---				end
---			end
---		end
---		
---		--create a new flower
---		if #neighbors > 0 then
---			local ni = flr(rnd(neighbors)) + 1
---			local ns,cx,cy = unpack(neighbors[ni])
---			local cs = create_flower(breed(s, ns))
---			place_flower(cs, cx, cy)
---		else
---			local clone_spaces = {}
---			for dx=-1,1 do
---				for dy=-1,1 do
---					if dx!=0 or dy!=0 then
---						local cx,cy = x+dx, y+dy
---						if check_empty(cx,cy) then
---							add(clone_spaces, {cx, cy})
---						end
---					end
---				end
---			end
---			if #clone_spaces > 0 then
---				local cx, cy = unpack(rnd(clone_spaces))
---				place_flower(s, cx, cy)
---			end
---		end
---	end
---end
---
---function check_field_bounds(x,y)
---	return x >=0 and x <=7 and y >= 0 and y <= 6
---end
---
---function check_empty(x,y)
---	return check_field_bounds(x,y) and mget(x*2,y*2) == 0
---end
---
---function find_child_spaces(x,y,dx,dy)
---	--find all available child spaces spaces
---	local child_spaces={}
---	if abs(dx) + abs(dy) == 0 then
---		if abs(dx) == 1 then
---			-- neighbors in cardinal directions
---			for dx2=0,dx,dx do
---				for dy2=-1,1,2 do
---					local cx,cy = x+dx2,y+dy2
---					if check_empty(cx,cy) then
---						add(child_spaces,{cx,cy})
---					end
---				end
---			end
---		else
---			for dy2=0,dy,dy do
---				for dx2=-1,1,2 do
---					local cx,cy = x+dx2,y+dy2
---					if check_empty(cx,cy) then
---						add(child_spaces,{cx,cy})
---					end
---				end
---			end
---		end
---	else
---		--neighbors diagonally
---		local cx,cy = x+dx,y
---		if check_empty(cx,cy) then
---			add(child_spaces,{cx,cy})
---		end
---		cx,cy = x,y+dy
---		if check_empty(cx,cy) then
---			add(child_spaces,{cx,cy})
---		end
---	end
---	return child_spaces
---end
 __gfx__
 00000000777000000000000000000000000000000000000000000000000000000080020000cccc008000000800777700d6656d00000000000000000000000000
 0000000070000000000000000000000000000000000000000000000000000000008822000cccccc00800008007775770d6656dd0000000000000000000000000

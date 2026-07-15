@@ -52,9 +52,23 @@ I think representing placement in RAM will be a consequence of whatever data str
 		- [x] Not necessary- read field directly
 
 * Switch out sprite storage from default page -> generated in extended memory
+	- [ ] generate_and_place_flower
+	- [ ] generate_flower
+	- [ ] place_flower
+	- [ ] kill_flower
+	- [ ] draw_flowers
+	- [ ] time_passes (and all nested calls)
+	- [ ] breed
+	- [ ] is_compatible
+	- [ ] get_genes
 * Rewrite save tool - actually two pieces of functionality
 	* New implementation that exports a field worth of sprite and genes to the spritesheet
 	* Cart storage / loading of genome data
+
+#### Cleanup steps
+- [ ] Adjust field (and button?) cursor indexing to be 1 based
+- [ ] 
+
 ### Functions to Change
 ```
 generate_and_place_flower
@@ -64,6 +78,7 @@ kill_flower
 draw_flowers
 save_game
 time_passes (and all nested calls)
+breed
 is_compatible
 get_genes
 ```
