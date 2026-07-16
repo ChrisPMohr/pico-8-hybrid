@@ -154,7 +154,7 @@ function generate_and_place_flower(flower_type)
 end
 
 function add_flower_to_field(flower, x, y)
-	field_debug = gene_str(flower.genes)
+--	field_debug = gene_str(flower.genes)
 	field1:place(flower, x, y)
 	create_and_place_flower_sprite(flower)
 end
@@ -173,7 +173,6 @@ function draw_ground()
 end
 
 function draw_flowers()
---	map(0,0,0,0,16,14)
 -- switch sprite sheet to extended sheet 0
 	poke(0x5f54,0x80)
 	sspr(0,0,128,112)
@@ -444,7 +443,6 @@ function time_passes()
 		end
 	end
 
-		
 	--shuffle the order they're
 	--processed in
 	for i=#breeding,2,-1 do
@@ -453,41 +451,35 @@ function time_passes()
 	end
 	
 	for flower in all(breeding) do
-		local x, y = flower.x, flower.y
-		
 		--determine eligible neighbors
-		local neighbors={}
-		for dx=-1,1 do
-			for dy=-1,1 do
-				local nx,ny = x+dx, y+dy
-				if (dx!=0 or dy!=0) and check_field_bounds(nx, ny) then
-					local neighbor = field1:get(nx, ny)
-					if neighbor and flower:is_compatible(neighbor) then
-						local child_spaces = find_child_spaces(x,y,dx,dy)
-						if #child_spaces > 0 then
-							local cx,cy = unpack(rnd(child_spaces))
-							add(neighbors, {neighbor, cx, cy})
-						end
-					end
+		local all_neighbors = generate_neighbors(flower.x, flower.y)
+		local eligible_neighbors={}
+
+		for coords,_ in pairs(all_neighbors) do
+			local nx, ny = unpacks(coords)
+			local neighbor = field1:get(nx, ny)
+			if neighbor and flower:is_compatible(neighbor) then
+				local child_spaces = intersection(
+					all_neighbors,
+					generate_neighbors(nx, ny))
+				if #child_spaces > 0 then
+					local cx,cy = unpacks(rnd(child_spaces))
+					add(eligible_neighbors, {neighbor, cx, cy})
 				end
 			end
 		end
 		
 		--create a new flower
-		if #neighbors > 0 then
-			local neighbor,cx,cy = unpack(rnd(neighbors))
+		if #eligible_neighbors > 0 then
+			local neighbor,cx,cy = unpack(rnd(eligible_neighbors))
 			local child = breed(flower, neighbor)
 			add_flower_to_field(child, cx, cy)
 		else
 			local clone_spaces = {}
-			for dx=-1,1 do
-				for dy=-1,1 do
-					if dx!=0 or dy!=0 then
-						local cx,cy = x+dx, y+dy
-						if check_empty(cx,cy) then
-							add(clone_spaces, {cx, cy})
-						end
-					end
+			for coords,_ in pairs(all_neighbors) do
+				local cx,cy = unpacks(coords)
+				if not field1:get(cx,cy) then
+					add(clone_spaces, {cx, cy})
 				end
 			end
 			if #clone_spaces > 0 then
@@ -503,46 +495,34 @@ function check_field_bounds(x,y)
 	return x >=1 and x <=8 and y >= 1 and y <= 7
 end
 
-function check_empty(x,y)
-	return check_field_bounds(x,y) and not field1:get(x,y)
-end
-
-function find_child_spaces(x,y,dx,dy)
-	--find all available child spaces spaces
-	local child_spaces={}
-	if abs(dx) + abs(dy) == 1 then
-		if abs(dx) == 1 then
-			-- neighbors in cardinal directions
-			for dx2=0,dx,dx do
-				for dy2=-1,1,2 do
-					local cx,cy = x+dx2,y+dy2
-					if check_empty(cx,cy) then
-						add(child_spaces,{cx,cy})
-					end
-				end
-			end
-		else
-			for dy2=0,dy,dy do
-				for dx2=-1,1,2 do
-					local cx,cy = x+dx2,y+dy2
-					if check_empty(cx,cy) then
-						add(child_spaces,{cx,cy})
-					end
-				end
-			end
-		end
-	else
-		--neighbors diagonally
-		local cx,cy = x+dx,y
-		if check_empty(cx,cy) then
-			add(child_spaces,{cx,cy})
-		end
-		cx,cy = x,y+dy
-		if check_empty(cx,cy) then
-			add(child_spaces,{cx,cy})
+function intersection(coords1, coords2)
+	local ins = {}
+	for coords,_ in pairs(coords1) do
+		local x,y = unpacks(coords)
+		if coords2[coords] and not field1:get(x,y) then
+			add(ins, coords)
 		end
 	end
-	return child_spaces
+	return ins
+end
+
+function generate_neighbors(x,y)
+	local coords = {}
+	for dx=-1,1 do
+		for dy=-1,1 do
+			if dx !=0 or dy != 0 then
+				local x2, y2 = x+dx, y+dy
+				if check_field_bounds(x2, y2) then
+					coords[x2..","..y2] = true
+				end
+			end
+		end
+	end
+	return coords
+end
+
+function unpacks(s)
+	return unpack(split(s))
 end
 __gfx__
 00000000777000000000000000000000000000000000000000000000000000000080020000cccc008000000800777700d6656d00000000000000000000000000
