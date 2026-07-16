@@ -31,7 +31,7 @@ function save_game()
 	
 	--store sprites and map in a
 	--save file
-	cstore(0x0,0x0,0x30ff,"hybrid_save.p8")
+	cstore(0x0,0x0,0x30ff,"floratype_save.p8")
 end
 
 
