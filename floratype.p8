@@ -337,6 +337,20 @@ function draw_ground()
 			spr(16,x*8,y*8)
 		end
 	end
+	
+	-- 1 pixel outline
+--	if fcam_y == 1 then
+--		line(-16,0,144,0,5)
+--	end
+--	if fcam_y + 6 == f_max_y then
+--		line(-16,111,144,111,5)
+--	end
+--	if fcam_x == 1 then
+--		line(0,-16,0,128,5)
+--	end
+--	if fcam_x + 7 == f_max_x then
+--		line(127,-16,127,128,5)
+--	end
 end
 
 function draw_flowers()
